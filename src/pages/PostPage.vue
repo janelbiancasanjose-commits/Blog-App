@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted } from "vue"
-import { useRoute } from "vue-router"
+import { useRoute, useRouter} from "vue-router"
 import api from "../api"
 import CommentForm from "../components/CommentForm.vue"
 import { useGlobalStore } from "../stores/global"
@@ -13,6 +13,37 @@ const notyf = new Notyf()
 
 const globalStore = useGlobalStore()
 const { user } = globalStore
+
+const showAddPost = ref(false)
+
+const newPost = ref({
+  title: "",
+  content: ""
+})
+
+const addPost = async () => {
+  try {
+    const res = await api.post("/posts", newPost.value)
+
+    notyf.success(res.data.message)
+
+    // optional reset
+    newPost.value = {
+      title: "",
+      content: ""
+    }
+
+    showAddPost.value = false
+
+    // redirect to newly created post
+    router.push(`/posts/${res.data.post._id}`)
+
+  } catch (err) {
+    console.error(err)
+    notyf.error("Failed to create post")
+  }
+}
+
 
 // Load post data
 const loadPost = async () => {
